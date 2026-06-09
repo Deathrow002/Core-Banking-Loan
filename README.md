@@ -100,6 +100,13 @@ The monthly payment formula depends on the loan type:
 | `MORTGAGE` | Monthly Compound | $A = P\left(1 + \dfrac{r}{12}\right)^{12t}$, then $M = A / n$ |
 | `AUTO` | Annual Simple Interest | $A = P(1 + r \cdot t)$, then $M = A / n$ |
 
+**Add-on Interest (Flat Rate):**
+
+When `ADD_ON` calculation type is used:
+- Total Interest = $P \cdot r \cdot t$
+- Total Amount = $P +$ Total Interest
+- Monthly Payment = Total Amount ÷ $n$
+
 Where:
 - **P** = principal amount
 - **r** = annual interest rate / 100 (monthly rate = r / 12 for amortising)

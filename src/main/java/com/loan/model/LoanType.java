@@ -30,6 +30,7 @@ public enum LoanType {
     public enum CalculationType {
         AMORTISING,
         COMPOUND,
-        ANNUAL_SIMPLE
+        ANNUAL_SIMPLE,
+        ADD_ON
     }
 }

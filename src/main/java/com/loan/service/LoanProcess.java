@@ -3,7 +3,6 @@ package com.loan.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.loan.model.Loan;
 import com.loan.model.LoanType;
 import com.loan.model.DTO.LoanDTO;
+import com.loan.model.DTO.LoanPaymentDTO;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -65,6 +65,14 @@ public class LoanProcess {
             .doOnError(e -> log.error("Loan application failed: {}", e.getMessage()));
     }
 
+    public Mono<Loan> processLoanPayment(LoanPaymentDTO paymentDTO) {
+        return loanService.makeLoanPayment(paymentDTO.getLoanId(), paymentDTO.getPaymentAmount())
+            .doOnSuccess(loan -> log.info("Loan payment processed. loanId={}, remainingBalance={}",
+                loan.getId(), loan.getRemainingBalance()))
+            .doOnError(e -> log.error("Loan payment failed. loanId={}, reason={}",
+                paymentDTO.getLoanId(), e.getMessage()));
+    }
+
     // -------------------------------------------------------------------------
     // Payment calculation dispatcher
     // -------------------------------------------------------------------------
@@ -74,6 +82,7 @@ public class LoanProcess {
         return switch (type.getCalculationType()) {
             case COMPOUND      -> calculateCompound(principal, annualRate, termMonths);
             case ANNUAL_SIMPLE -> calculateAnnualSimple(principal, annualRate, termMonths);
+            case ADD_ON        -> calculateAddOn(principal, annualRate, termMonths);
             default            -> calculateAmortising(principal, annualRate, termMonths);
         };
     }
@@ -123,6 +132,25 @@ public class LoanProcess {
         double r = annualRate.doubleValue() / 100.0;
         double t = termMonths / 12.0;
         double totalAmount = principal.doubleValue() * (1 + r * t);
+        double monthly = totalAmount / termMonths;
+        return BigDecimal.valueOf(monthly).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Add-on Interest (Flat Rate) — fixed interest calculated upfront:
+     *   Interest = P · r · t
+     *   Total = P + Interest
+     * Monthly payment = Total / termMonths, where t = years = termMonths / 12.
+     * This method calculates total interest once and divides evenly across all months.
+     */
+    private BigDecimal calculateAddOn(BigDecimal principal, BigDecimal annualRate, int termMonths) {
+        if (annualRate.compareTo(BigDecimal.ZERO) == 0) {
+            return principal.divide(BigDecimal.valueOf(termMonths), 2, RoundingMode.HALF_UP);
+        }
+        double r = annualRate.doubleValue() / 100.0;
+        double t = termMonths / 12.0;
+        double interest = principal.doubleValue() * r * t;
+        double totalAmount = principal.doubleValue() + interest;
         double monthly = totalAmount / termMonths;
         return BigDecimal.valueOf(monthly).setScale(2, RoundingMode.HALF_UP);
     }

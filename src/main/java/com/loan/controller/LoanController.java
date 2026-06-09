@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.loan.model.Loan;
 import com.loan.model.DTO.LoanDTO;
+import com.loan.model.DTO.LoanPaymentDTO;
 import com.loan.service.LoanProcess;
 import com.loan.service.LoanService;
 
@@ -50,6 +51,13 @@ public class LoanController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public Mono<ResponseEntity<Loan>> close(@RequestParam UUID loanId) {
         return loanService.closeLoan(loanId)
+            .map(loan -> ResponseEntity.status(HttpStatus.OK).body(loan));
+    }
+
+    @PostMapping("/pay")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
+    public Mono<ResponseEntity<Loan>> pay(@Valid @RequestBody LoanPaymentDTO paymentDTO) {
+        return loanProcess.processLoanPayment(paymentDTO)
             .map(loan -> ResponseEntity.status(HttpStatus.OK).body(loan));
     }
 

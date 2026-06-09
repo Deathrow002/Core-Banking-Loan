@@ -1,5 +1,7 @@
 package com.loan.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,6 +59,36 @@ public class LoanService {
         return loanRepository.findById(loanId)
             .flatMap(loan -> {
                 loan.setLoanStatus(LoanStatus.CLOSED.name());
+                return loanRepository.save(loan);
+            });
+    }
+
+    public Mono<Loan> makeLoanPayment(UUID loanId, BigDecimal paymentAmount) {
+        return loanRepository.findById(loanId)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("Loan not found: " + loanId)))
+            .flatMap(loan -> {
+                if (!LoanStatus.ACTIVE.name().equals(loan.getLoanStatus())) {
+                    return Mono.error(new IllegalArgumentException(
+                        "Loan is not active. Current status: " + loan.getLoanStatus()));
+                }
+
+                BigDecimal amount = paymentAmount.setScale(2, RoundingMode.HALF_UP);
+                if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                    return Mono.error(new IllegalArgumentException("Payment amount must be greater than zero"));
+                }
+
+                BigDecimal remaining = loan.getRemainingBalance() != null
+                    ? loan.getRemainingBalance()
+                    : loan.getPrincipalAmount();
+
+                BigDecimal updatedRemaining = remaining.subtract(amount).setScale(2, RoundingMode.HALF_UP);
+                if (updatedRemaining.compareTo(BigDecimal.ZERO) <= 0) {
+                    loan.setRemainingBalance(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+                    loan.setLoanStatus(LoanStatus.CLOSED.name());
+                } else {
+                    loan.setRemainingBalance(updatedRemaining);
+                }
+
                 return loanRepository.save(loan);
             });
     }
