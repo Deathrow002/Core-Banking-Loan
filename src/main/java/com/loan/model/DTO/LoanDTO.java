@@ -6,6 +6,9 @@ import java.util.UUID;
 
 import com.loan.model.LoanType;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +22,10 @@ public class LoanDTO {
     private UUID accountId;
     private LoanType loanType;
     private BigDecimal principalAmount;
+
+    @NotNull(message = "Interest rate is required")
+    @DecimalMin(value = "0.00", message = "Interest rate must be at least 0%")
+    @DecimalMax(value = "16.00", message = "Interest rate must not exceed 16%")
     private BigDecimal interestRate;
     private Integer termMonths;
     private LocalDate startDate;

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS loan (
     loan_status     VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     principal_amount NUMERIC(15, 2) NOT NULL,
     remaining_balance NUMERIC(15, 2) NOT NULL,
-    interest_rate   NUMERIC(5, 4) NOT NULL,
+    interest_rate   NUMERIC(5, 4) NOT NULL CHECK (interest_rate >= 0 AND interest_rate <= 16),
     term_months     INTEGER     NOT NULL,
     monthly_payment NUMERIC(15, 2) NOT NULL,
     start_date      DATE        NOT NULL,

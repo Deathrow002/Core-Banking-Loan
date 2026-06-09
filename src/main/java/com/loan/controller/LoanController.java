@@ -18,6 +18,7 @@ import com.loan.model.DTO.LoanDTO;
 import com.loan.service.LoanProcess;
 import com.loan.service.LoanService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -31,7 +32,7 @@ public class LoanController {
 
     @PostMapping("/apply")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
-    public Mono<ResponseEntity<Loan>> apply(@RequestBody LoanDTO loanDTO,
+    public Mono<ResponseEntity<Loan>> apply(@Valid @RequestBody LoanDTO loanDTO,
                                             @RequestHeader("Authorization") String authorizationHeader) {
         String jwtToken = authorizationHeader.replace("Bearer ", "");
         return loanProcess.applyLoan(loanDTO, jwtToken)
