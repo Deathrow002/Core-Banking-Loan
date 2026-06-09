@@ -35,6 +35,6 @@ WORKDIR /app
 # Copy the built JAR from the builder stage
 COPY --from=builder /app/loan/target/*.jar loan-service.jar
 
-EXPOSE 8083
+EXPOSE 8084
 
 ENTRYPOINT ["java", "-jar", "loan-service.jar"]
