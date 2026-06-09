@@ -39,11 +39,11 @@ public class LoanService {
         return loanRepository.save(loan);
     }
 
-    public Mono<Loan> findById(UUID loanId) {
+    public Mono<Loan> enquiryByLoanId(UUID loanId) {
         return loanRepository.findById(loanId);
     }
 
-    public Mono<List<Loan>> getLoansByCustomer(UUID customerId) {
+    public Mono<List<Loan>> enquiryByCustomerId(UUID customerId) {
         return loanRepository.findAllByCustomerId(customerId).collectList();
     }
 

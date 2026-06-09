@@ -54,24 +54,24 @@ public class LoanController {
             .map(loan -> ResponseEntity.status(HttpStatus.OK).body(loan));
     }
 
-    @PostMapping("/pay")
+    @PostMapping("/processPayment")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
-    public Mono<ResponseEntity<Loan>> pay(@Valid @RequestBody LoanPaymentDTO paymentDTO) {
+    public Mono<ResponseEntity<Loan>> processPayment(@Valid @RequestBody LoanPaymentDTO paymentDTO) {
         return loanProcess.processLoanPayment(paymentDTO)
             .map(loan -> ResponseEntity.status(HttpStatus.OK).body(loan));
     }
 
-    @GetMapping("/getById")
+    @GetMapping("/enquiryByLoanId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('USER')")
-    public Mono<ResponseEntity<Loan>> getById(@RequestParam UUID loanId) {
-        return loanService.findById(loanId)
+    public Mono<ResponseEntity<Loan>> enquiryByLoanId(@RequestParam UUID loanId) {
+        return loanService.enquiryByLoanId(loanId)
             .map(loan -> ResponseEntity.status(HttpStatus.OK).body(loan));
     }
 
-    @GetMapping("/getByCustomer")
+    @GetMapping("/enquiryByCustomerId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
-    public Mono<ResponseEntity<?>> getByCustomer(@RequestParam UUID customerId) {
-        return loanService.getLoansByCustomer(customerId)
+    public Mono<ResponseEntity<?>> enquiryByCustomerId(@RequestParam UUID customerId) {
+        return loanService.enquiryByCustomerId(customerId)
             .map(list -> ResponseEntity.status(HttpStatus.OK).body(list));
     }
 }
